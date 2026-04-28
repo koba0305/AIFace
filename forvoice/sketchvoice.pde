@@ -3,7 +3,7 @@ import processing.sound.*;
 Sound soundEngine;
 AudioIn in;
 Amplitude amp;
-int[] deviceCandidates = {14, 13, 1, 2};
+int[] deviceCandidates = {14, 13};
 int deviceIdx = 0;
 int activeInputChannel = 0;
 int activeInputDeviceId = -1;
@@ -322,17 +322,22 @@ int findInputDeviceId() {
   String[] devices = Sound.list();
   printArray(devices);
 
-  for (int i = 0; i < devices.length; i++) {
-    String deviceName = devices[i].toLowerCase();
-    if (deviceName.indexOf("blackhole") >= 0 && deviceName.indexOf("16ch") >= 0) {
-      println("[audio] selected BlackHole 16ch device=" + i + " name=" + devices[i]);
-      return i;
+  for (int i = 0; i < deviceCandidates.length; i++) {
+    int deviceId = deviceCandidates[i];
+    if (deviceId >= 0 && deviceId < devices.length && isBlackHole16ch(devices[deviceId])) {
+      println("[audio] selected BlackHole 16ch device=" + deviceId + " name=" + devices[deviceId]);
+      return deviceId;
     }
   }
 
   int fallbackId = deviceCandidates[deviceIdx];
-  println("[audio] BlackHole 16ch not found, fallback device=" + fallbackId);
+  println("[audio] BlackHole 16ch not found at preferred ids, forcing device=" + fallbackId);
   return fallbackId;
+}
+
+boolean isBlackHole16ch(String deviceName) {
+  String name = deviceName.toLowerCase();
+  return name.indexOf("blackhole") >= 0 && name.indexOf("16ch") >= 0;
 }
 
 void openInput(int deviceId, int ch) {

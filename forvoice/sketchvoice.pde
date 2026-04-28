@@ -6,7 +6,7 @@ Amplitude amp;
 int[] deviceCandidates = {14, 13, 1, 2};
 int deviceIdx = 0;
 int activeInputChannel = 0;
-final int INPUT_DEVICE_ID = 14;
+int activeInputDeviceId = -1;
 
 float smoothLevel = 0.0;
 String currentFace = ":)";
@@ -84,7 +84,7 @@ final int SPEAK_INTERVAL_MS = 10000; // test mode: speak every 10s
 final float LEVEL_MAX = 0.175; // about 2x sensitivity vs 0.35
 final int INPUT_CHANNEL = 0;
 final float INPUT_BOOST = 1.0; // boost tiny input changes
-final float SPEECH_VOLUME = 0.35; // macOS say embedded volume, 0.0-1.0
+final float SPEECH_VOLUME = 0.70; // macOS say embedded volume, 0.0-1.0
 String chatUrl = "https://chatgpt.com/c/69ee64d0-50ec-83a8-98f0-20d01fd02bae";
 String speechOutputDeviceName = "AIface";
 String currentOutputDevice = "AIface";
@@ -116,8 +116,8 @@ String[] specialFaces = {
 void setup() {
   size(1050, 570);
 
-  printArray(Sound.list());
-  openInput(deviceCandidates[deviceIdx], INPUT_CHANNEL);
+  activeInputDeviceId = findInputDeviceId();
+  openInput(activeInputDeviceId, INPUT_CHANNEL);
   nextSpeakAtMs = millis() + SPEAK_INTERVAL_MS;
 }
 
@@ -314,10 +314,26 @@ void drawSpeechUI() {
   textSize(11);
   text("Output: " + currentOutputDevice, panelX + 14, timerBtnY + 62);
   text("(Please set output device to \"AIface\")", panelX + 14, timerBtnY + 80);
-  text("Input: device id " + INPUT_DEVICE_ID + " ch " + activeInputChannel, panelX + 14, timerBtnY + 98);
+  text("Input: device id " + activeInputDeviceId + " ch " + activeInputChannel, panelX + 14, timerBtnY + 98);
   popStyle();
 }
 
+int findInputDeviceId() {
+  String[] devices = Sound.list();
+  printArray(devices);
+
+  for (int i = 0; i < devices.length; i++) {
+    String deviceName = devices[i].toLowerCase();
+    if (deviceName.indexOf("blackhole") >= 0 && deviceName.indexOf("16ch") >= 0) {
+      println("[audio] selected BlackHole 16ch device=" + i + " name=" + devices[i]);
+      return i;
+    }
+  }
+
+  int fallbackId = deviceCandidates[deviceIdx];
+  println("[audio] BlackHole 16ch not found, fallback device=" + fallbackId);
+  return fallbackId;
+}
 
 void openInput(int deviceId, int ch) {
   try {

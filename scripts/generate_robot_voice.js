@@ -23,12 +23,12 @@ fs.mkdirSync(rawDir, { recursive: true });
 fs.mkdirSync(outDir, { recursive: true });
 
 const filter = [
-  "highpass=f=120",
-  "lowpass=f=5200",
-  "acrusher=bits=6:mode=log:mix=0.45",
-  "tremolo=f=72:d=0.65",
-  "flanger=delay=4:depth=6:regen=3:width=75:speed=0.8",
-  "aecho=0.8:0.45:22:0.35",
+  "highpass=f=260",
+  "lowpass=f=6200",
+  "acrusher=bits=8:mode=log:mix=0.18",
+  "tremolo=f=72:d=0.55",
+  "flanger=delay=3:depth=4:regen=1:width=65:speed=0.8",
+  "aecho=0.65:0.22:18:0.18",
   "volume=8.0",
   "alimiter=limit=0.95",
 ].join(",");

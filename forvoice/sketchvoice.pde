@@ -253,8 +253,10 @@ void drawMeter(float rawIn, float boostedRaw, float smoothed) {
 
 void drawSpeechUI() {
   pushStyle();
+  drawChatHitArea();
+
   float panelW = 230;
-  float panelH = 220;
+  float panelH = 180;
   float panelX = uiPanelX(panelW);
   float panelY = uiPanelY();
 
@@ -266,12 +268,8 @@ void drawSpeechUI() {
   float btnY = panelY + 14;
   float btnW = 200;
   float btnH = 30;
-  float chatBtnX = btnX;
-  float chatBtnY = btnY + 40;
-  float chatBtnW = btnW;
-  float chatBtnH = 30;
   float timerBtnX = btnX;
-  float timerBtnY = chatBtnY + 40;
+  float timerBtnY = btnY + 40;
   float timerBtnW = btnW;
   float timerBtnH = 30;
 
@@ -286,11 +284,6 @@ void drawSpeechUI() {
   textAlign(CENTER, CENTER);
   textSize(13);
   text(speechEnabled ? "VOICE ON" : "VOICE OFF", btnX + btnW / 2, btnY + btnH / 2);
-
-  fill(65, 125, 205);
-  rect(chatBtnX, chatBtnY, chatBtnW, chatBtnH, 8);
-  fill(245);
-  text("CHAT", chatBtnX + chatBtnW / 2, chatBtnY + chatBtnH / 2);
 
   fill(showSpeakSeconds ? color(85, 150, 95) : color(90, 95, 105));
   rect(timerBtnX, timerBtnY, timerBtnW, timerBtnH, 8);
@@ -327,6 +320,13 @@ void drawSpeechUI() {
   text("Input: device id " + activeInputDeviceId + " ch " + activeInputChannel, panelX + 14, timerBtnY + 98);
   text("Voice src: " + lastVoiceMode, panelX + 14, timerBtnY + 116);
   popStyle();
+}
+
+void drawChatHitArea() {
+  noFill();
+  stroke(120, 230, 255, 120);
+  strokeWeight(2);
+  rect(chatAreaX(), chatAreaY(), chatAreaW(), chatAreaH(), 16);
 }
 
 int findInputDeviceId() {
@@ -378,11 +378,6 @@ void mousePressed() {
     return;
   }
 
-  if (isOverChatButton(mouseX, mouseY)) {
-    openChatAndStopVoice();
-    return;
-  }
-
   if (isOverSpeechButton(mouseX, mouseY)) {
     speechEnabled = !speechEnabled;
     if (speechEnabled) {
@@ -392,6 +387,11 @@ void mousePressed() {
       pendingVoiceIndex = -1;
       pendingSpeakAtMs = -1;
     }
+    return;
+  }
+
+  if (isOverChatArea(mouseX, mouseY)) {
+    openChatAndStopVoice();
   }
 }
 
@@ -405,14 +405,8 @@ boolean isOverSpeechButton(float mx, float my) {
   return mx >= btnX && mx <= btnX + btnW && my >= btnY && my <= btnY + btnH;
 }
 
-boolean isOverChatButton(float mx, float my) {
-  float panelX = uiPanelX(230);
-  float panelY = uiPanelY();
-  float chatBtnX = panelX + 14;
-  float chatBtnY = panelY + 54;
-  float chatBtnW = 200;
-  float chatBtnH = 30;
-  return mx >= chatBtnX && mx <= chatBtnX + chatBtnW && my >= chatBtnY && my <= chatBtnY + chatBtnH;
+boolean isOverChatArea(float mx, float my) {
+  return mx >= chatAreaX() && mx <= chatAreaX() + chatAreaW() && my >= chatAreaY() && my <= chatAreaY() + chatAreaH();
 }
 
 boolean isOverTimerButton(float mx, float my) {
@@ -431,6 +425,22 @@ float uiPanelX(float panelW) {
 
 float uiPanelY() {
   return 20;
+}
+
+float chatAreaX() {
+  return 70;
+}
+
+float chatAreaY() {
+  return 55;
+}
+
+float chatAreaW() {
+  return width - 360;
+}
+
+float chatAreaH() {
+  return height - 145;
 }
 
 void openChatAndStopVoice() {

@@ -169,7 +169,7 @@ void draw() {
     pendingSpeakAtMs = -1;
   }
 
-  float sz = map(constrain(smoothLevel, 0, LEVEL_MAX), 0, LEVEL_MAX, 216, 420);
+  float sz = map(constrain(smoothLevel, 0, LEVEL_MAX), 0, LEVEL_MAX, 216, 340);
   textSize(sz);
 
   float r = map(constrain(smoothLevel, 0, LEVEL_MAX), 0, LEVEL_MAX, 150, 95);

@@ -169,7 +169,7 @@ void draw() {
     pendingSpeakAtMs = -1;
   }
 
-  float sz = map(constrain(smoothLevel, 0, LEVEL_MAX), 0, LEVEL_MAX, 108, 210);
+  float sz = map(constrain(smoothLevel, 0, LEVEL_MAX), 0, LEVEL_MAX, 216, 420);
   textSize(sz);
 
   float r = map(constrain(smoothLevel, 0, LEVEL_MAX), 0, LEVEL_MAX, 150, 95);
@@ -221,12 +221,12 @@ boolean useSpecialFace(float lvl) {
 void drawFaceText(String face) {
   textAlign(CENTER, CENTER);
   if (!rotateFace90) {
-    text(face, width / 2, height / 2 - 10);
+    text(face, faceCenterX(), faceCenterY());
     return;
   }
 
   pushMatrix();
-  translate(width / 2, height / 2 - 10);
+  translate(faceCenterX(), faceCenterY());
   rotate(HALF_PI);
   text(face, 0, 0);
   popMatrix();
@@ -441,6 +441,14 @@ float chatAreaW() {
 
 float chatAreaH() {
   return height - 145;
+}
+
+float faceCenterX() {
+  return chatAreaX() + chatAreaW() / 2;
+}
+
+float faceCenterY() {
+  return chatAreaY() + chatAreaH() / 2;
 }
 
 void openChatAndStopVoice() {

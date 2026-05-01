@@ -78,6 +78,7 @@ String[] voiceLines = {
 int nextSpeakAtMs = 0;
 int pendingSpeakAtMs = -1;
 String pendingLine = null;
+int pendingVoiceIndex = -1;
 boolean speechEnabled = true;
 boolean showSpeakSeconds = true;
 final int SPEAK_INTERVAL_MS = 10000; // test mode: speak every 10s
@@ -85,6 +86,7 @@ final float LEVEL_MAX = 0.175; // about 2x sensitivity vs 0.35
 final int INPUT_CHANNEL = 0;
 final float INPUT_BOOST = 1.0; // boost tiny input changes
 final float SPEECH_VOLUME = 0.70; // macOS say embedded volume, 0.0-1.0
+final boolean ROBOT_VOICE = true;
 String chatUrl = "https://chatgpt.com/c/69ee64d0-50ec-83a8-98f0-20d01fd02bae";
 String speechOutputDeviceName = "AIface";
 String currentOutputDevice = "AIface";
@@ -146,20 +148,23 @@ void draw() {
 
 
   if (speechEnabled) {
-    if (pendingLine != null && millis() >= pendingSpeakAtMs) {
-      println("[voice] " + pendingLine);
-      speak(pendingLine);
+    if (pendingVoiceIndex >= 0 && millis() >= pendingSpeakAtMs) {
+      println("[voice] " + voiceLines[pendingVoiceIndex]);
+      speakVoice(pendingVoiceIndex);
       pendingLine = null;
+      pendingVoiceIndex = -1;
       pendingSpeakAtMs = -1;
     }
 
-    if (pendingLine == null && millis() >= nextSpeakAtMs) {
-      pendingLine = pick(voiceLines);
+    if (pendingVoiceIndex < 0 && millis() >= nextSpeakAtMs) {
+      pendingVoiceIndex = pickVoiceIndex();
+      pendingLine = voiceLines[pendingVoiceIndex];
       pendingSpeakAtMs = millis() + int(random(200, 801));
       nextSpeakAtMs = millis() + SPEAK_INTERVAL_MS;
     }
   } else {
     pendingLine = null;
+    pendingVoiceIndex = -1;
     pendingSpeakAtMs = -1;
   }
 
@@ -200,6 +205,10 @@ String pickDisplayFace(float lvl) {
 String pick(String[] faces) {
   int i = int(random(faces.length));
   return faces[i];
+}
+
+int pickVoiceIndex() {
+  return int(random(voiceLines.length));
 }
 
 boolean useSpecialFace(float lvl) {
@@ -378,6 +387,7 @@ void mousePressed() {
       nextSpeakAtMs = millis() + SPEAK_INTERVAL_MS;
     } else {
       pendingLine = null;
+      pendingVoiceIndex = -1;
       pendingSpeakAtMs = -1;
     }
   }
@@ -424,6 +434,7 @@ float uiPanelY() {
 void openChatAndStopVoice() {
   speechEnabled = false;
   pendingLine = null;
+  pendingVoiceIndex = -1;
   pendingSpeakAtMs = -1;
 
   try {
@@ -436,6 +447,38 @@ void openChatAndStopVoice() {
 }
 
 
+void speakVoice(int voiceIndex) {
+  final int index = voiceIndex;
+  Thread t = new Thread(new Runnable() {
+    public void run() {
+      if (ROBOT_VOICE) {
+        String filename = "robot_voice/voice_" + nf(index, 3) + ".m4a";
+        String path = dataPath(filename);
+        java.io.File file = new java.io.File(path);
+        if (file.exists() && runRobotVoiceFile(path)) {
+          return;
+        }
+        println("[voice] robot file missing, falling back to say: " + filename);
+      }
+      speak(voiceLines[index]);
+    }
+  });
+  t.start();
+}
+
+boolean runRobotVoiceFile(String path) {
+  try {
+    String[] cmd = {"afplay", "-v", nf(SPEECH_VOLUME, 1, 2), path};
+    Process p = Runtime.getRuntime().exec(cmd);
+    int code = p.waitFor();
+    if (code == 0) return true;
+    println("[voice] afplay failed code=" + code);
+  }
+  catch (Exception e) {
+    println("[voice] afplay failed: " + e.getMessage());
+  }
+  return false;
+}
 
 void speak(String text) {
   final String line = text;

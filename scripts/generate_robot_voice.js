@@ -24,17 +24,20 @@ fs.mkdirSync(outDir, { recursive: true });
 
 const filter = [
   "highpass=f=120",
-  "lowpass=f=6500",
-  "acrusher=bits=9:mix=0.25",
-  "tremolo=f=55:d=0.35",
-  "aecho=0.6:0.3:18:0.25",
+  "lowpass=f=5200",
+  "acrusher=bits=6:mode=log:mix=0.45",
+  "tremolo=f=72:d=0.65",
+  "flanger=delay=4:depth=6:regen=3:width=75:speed=0.8",
+  "aecho=0.8:0.45:22:0.35",
+  "volume=8.0",
+  "alimiter=limit=0.95",
 ].join(",");
 
 for (let i = 0; i < lines.length; i++) {
   const id = String(i).padStart(3, "0");
   const rawPath = path.join(rawDir, `voice_${id}.aiff`);
   const outPath = path.join(outDir, `voice_${id}.m4a`);
-  const spokenText = `[[volm 0.70]] ${lines[i]}`;
+  const spokenText = `[[volm 1.00]] ${lines[i]}`;
 
   console.log(`[${id}] ${lines[i]}`);
 

@@ -85,11 +85,12 @@ final int SPEAK_INTERVAL_MS = 10000; // test mode: speak every 10s
 final float LEVEL_MAX = 0.175; // about 2x sensitivity vs 0.35
 final int INPUT_CHANNEL = 0;
 final float INPUT_BOOST = 1.0; // boost tiny input changes
-final float SPEECH_VOLUME = 0.70; // macOS say embedded volume, 0.0-1.0
+final float SPEECH_VOLUME = 1.00; // macOS say / afplay volume, 0.0-1.0
 final boolean ROBOT_VOICE = true;
 String chatUrl = "https://chatgpt.com/c/69ee64d0-50ec-83a8-98f0-20d01fd02bae";
 String speechOutputDeviceName = "AIface";
 String currentOutputDevice = "AIface";
+String lastVoiceMode = "none";
 
 String[] silentFaces = {
   ":I", ":|", ":( ",
@@ -324,6 +325,7 @@ void drawSpeechUI() {
   text("Output: " + currentOutputDevice, panelX + 14, timerBtnY + 62);
   text("(Please set output device to \"AIface\")", panelX + 14, timerBtnY + 80);
   text("Input: device id " + activeInputDeviceId + " ch " + activeInputChannel, panelX + 14, timerBtnY + 98);
+  text("Voice src: " + lastVoiceMode, panelX + 14, timerBtnY + 116);
   popStyle();
 }
 
@@ -456,8 +458,10 @@ void speakVoice(int voiceIndex) {
         String path = dataPath(filename);
         java.io.File file = new java.io.File(path);
         if (file.exists() && runRobotVoiceFile(path)) {
+          lastVoiceMode = "robot file";
           return;
         }
+        lastVoiceMode = "say fallback";
         println("[voice] robot file missing, falling back to say: " + filename);
       }
       speak(voiceLines[index]);
